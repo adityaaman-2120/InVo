@@ -2,9 +2,9 @@
 
 Modern, AI-powered inventory management built with React Native (Expo), TypeScript, and SQLite. This README is the single source of truth for setup, architecture, features, workflows, build, troubleshooting, and operational details.
 
-[![Download Latest](https://img.shields.io/badge/Download-Latest%20Release-blue?style=for-the-badge&logo=github)](https://github.com/Rakesh-ada/InVo/releases/latest)
-[![Android APK](https://img.shields.io/badge/Android-APK%20Download-green?style=for-the-badge&logo=android)](https://github.com/Rakesh-ada/InVo/releases/tag/v2.5/Invo_2.5.apk)
-[![Expo](https://img.shields.io/badge/Expo-Try%20Now-black?style=for-the-badge&logo=expo)](https://expo.dev/@Rakesh-ada/invo)
+[![Download Latest](https://img.shields.io/badge/Download-Latest%20Release-blue?style=for-the-badge&logo=github)]([https://github.com/Rakesh-ada/InVo/releases/latest](https://github.com/adityaaman-2120/InVo))
+[![Android APK](https://img.shields.io/badge/Android-APK%20Download-green?style=for-the-badge&logo=android)][(https://github.com/Rakesh-ada/InVo/releases/tag/v2.5/Invo_2.5.apk](https://github.com/adityaaman-2120/InVo))
+[![Expo](https://img.shields.io/badge/Expo-Try%20Now-black?style=for-the-badge&logo=expo)]([https://expo.dev/@Rakesh-ada/invo](https://github.com/adityaaman-2120/InVo))
 
  <p>
    <img src="./assets/gif/ezgif-56dc875ea301bf.gif" alt="InVo demo" width="520" />
