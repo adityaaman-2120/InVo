@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-const TAB_ROUTES = ['dashboard', 'products', 'explore', 'settings'];
+const TAB_ROUTES = ['dashboard', 'products', 'explore', 'orders', 'settings'];
 
 export function SwipeableScreen({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -20,7 +20,8 @@ export function SwipeableScreen({ children }: { children: React.ReactNode }) {
   };
 
   const gesture = Gesture.Pan()
-    .minDistance(10)
+    .activeOffsetX([-20, 20])
+    .failOffsetY([-15, 15])
     .onUpdate((event) => {
       const idx = currentIndexRef.current;
       if (idx === -1) return;

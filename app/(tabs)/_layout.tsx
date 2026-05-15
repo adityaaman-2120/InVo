@@ -9,6 +9,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { HomeIcon } from '@/components/ui/home-icon';
 import { ProductsIcon } from '@/components/ui/products-icon';
 import { CartIcon } from '@/components/ui/cart-icon';
+import { OrdersIcon } from '@/components/ui/orders-icon';
 import { SettingsIcon } from '@/components/ui/settings-icon';
 import { Colors } from '@/constants/theme';
 import { TabBarProvider, useTabBar } from '@/contexts/TabBarContext';
@@ -104,6 +105,17 @@ function TabLayoutContent() {
         }}
       />
       <Tabs.Screen
+        name="orders"
+        options={{
+          title: 'Orders',
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedTabIcon focused={focused}>
+              <OrdersIcon size={28} color={color} />
+            </AnimatedTabIcon>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
@@ -116,13 +128,15 @@ function TabLayoutContent() {
       />
     </Tabs>
 
-    <TouchableOpacity
-      style={[styles.aiFloatingButton, (activeTab === 'dashboard' || activeTab === 'products') && { bottom: 175 }]}
-      onPress={() => router.push('/ai-chat')}
-      activeOpacity={0.8}
-    >
-      <AIIcon size={28} color="#FFFFFF" />
-    </TouchableOpacity>
+    {activeTab !== 'explore' && (
+      <TouchableOpacity
+        style={[styles.aiFloatingButton, (activeTab === 'dashboard' || activeTab === 'products') && { bottom: 175 }]}
+        onPress={() => router.push('/ai-chat')}
+        activeOpacity={0.8}
+      >
+        <AIIcon size={28} color="#FFFFFF" />
+      </TouchableOpacity>
+    )}
     </>
   );
 }

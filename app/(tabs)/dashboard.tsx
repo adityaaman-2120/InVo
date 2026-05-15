@@ -2,6 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { NotificationBadgeIcon } from '@/components/ui/notification-badge-icon';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useTabBar } from '@/contexts/TabBarContext';
 // eslint-disable-next-line import/namespace
 import { dbService, Product } from '@/services/database';
@@ -63,6 +64,7 @@ type DashboardPreferences = {
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { setTabBarVisible } = useTabBar();
   const [products, setProducts] = useState<Product[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);

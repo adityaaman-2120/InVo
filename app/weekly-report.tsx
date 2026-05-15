@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { dbService, Product } from '@/services/database';
 import * as Print from 'expo-print';
 import { useRouter } from 'expo-router';
@@ -28,6 +29,7 @@ type WeeklyData = {
 
 export default function WeeklyReportScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isGenerating, setIsGenerating] = useState(false);
   const [weeklyData, setWeeklyData] = useState<WeeklyData | null>(null);
   const [isLoading, setIsLoading] = useState(true);

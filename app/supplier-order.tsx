@@ -4,6 +4,7 @@ import { DeleteIcon } from '@/components/ui/delete-icon';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SearchIcon } from '@/components/ui/search-icon';
 import { WhatsAppIcon } from '@/components/ui/whatsapp-icon';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Product as DBProduct, dbService, Supplier } from '@/services/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -60,6 +61,7 @@ SearchBarComponent.displayName = 'SearchBarComponent';
 
 export default function SupplierOrderScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const params = useLocalSearchParams();
   const supplierId = params.supplierId as string;
   

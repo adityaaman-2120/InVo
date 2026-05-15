@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useLanguage } from '@/contexts/LanguageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -12,6 +13,7 @@ const { width: screenWidth } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [profileName, setProfileName] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -25,7 +27,6 @@ export default function OnboardingScreen() {
 
   const markAppAsLaunched = async () => {
     try {
-      // Mark that the app has been launched (for first-time detection)
       await AsyncStorage.setItem('@invo_has_launched', 'true');
     } catch (e) {
       console.warn('Failed to mark app as launched', e);
@@ -36,7 +37,7 @@ export default function OnboardingScreen() {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Please grant photo library access.');
+        Alert.alert(t('shared', 'permissionRequired'), 'Please grant photo library access.');
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -49,7 +50,7 @@ export default function OnboardingScreen() {
         setProfileImage(result.assets[0].uri);
       }
     } catch (e) {
-      Alert.alert('Error', 'Failed to select image');
+      Alert.alert(t('shared', 'error'), 'Failed to select image');
     }
   };
 
@@ -57,7 +58,7 @@ export default function OnboardingScreen() {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Please grant photo library access.');
+        Alert.alert(t('shared', 'permissionRequired'), 'Please grant photo library access.');
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -70,13 +71,12 @@ export default function OnboardingScreen() {
         setQrPaymentImage(result.assets[0].uri);
       }
     } catch (e) {
-      Alert.alert('Error', 'Failed to select image');
+      Alert.alert(t('shared', 'error'), 'Failed to select image');
     }
   };
 
   const completeOnboarding = async () => {
     try {
-      // Save profile data if provided
       if (profileName.trim()) {
         const initialSettings = {
           profileName: profileName.trim(),
@@ -146,10 +146,10 @@ export default function OnboardingScreen() {
                 </View>
               </View>
               <ThemedText type="title" style={styles.title}>
-                Welcome to InVo
+                {t('onboarding', 'welcome')}
               </ThemedText>
               <ThemedText style={styles.subtitle}>
-                Effortless Inventory Mastery 🚀
+                {t('onboarding', 'effortless')}
               </ThemedText>
             </View>
           </View>
@@ -159,11 +159,11 @@ export default function OnboardingScreen() {
             <View style={styles.profileSetupContent}>
               <View style={styles.headerSection}>
                 <ThemedText type="title" style={styles.profileSetupTitle}>
-                  Profile Setup
+                  {t('onboarding', 'profileSetup')}
                 </ThemedText>
                 
 <ThemedText style={styles.profileSetupSubtitle}>
-                  Let{'\''}s Personalize Your Experience
+                  {t('onboarding', 'personalize')}
                 </ThemedText>
               </View>
               
@@ -185,7 +185,7 @@ export default function OnboardingScreen() {
                     </View>
                   )}
                 </TouchableOpacity>
-                <ThemedText style={styles.addPhotoText}>Tap to add photo</ThemedText>
+                <ThemedText style={styles.addPhotoText}>{t('onboarding', 'tapAddPhoto')}</ThemedText>
               </View>
               
               <View style={styles.nameInputContainer}>
@@ -193,12 +193,12 @@ export default function OnboardingScreen() {
                   value={profileName}
                   onChangeText={setProfileName}
                   style={styles.nameInput}
-                  placeholder="Enter Your Name"
+                  placeholder={t('onboarding', 'enterYourName')}
                   placeholderTextColor="#6B7280"
                 />
                 
                 <ThemedText style={styles.instructionText}>
-                  This will be displayed in your settings
+                  {t('onboarding', 'displayInSettings')}
                 </ThemedText>
               </View>
             </View>
@@ -209,11 +209,11 @@ export default function OnboardingScreen() {
             <View style={styles.businessSetupContent}>
               <View style={styles.headerSection}>
                 <ThemedText type="title" style={styles.businessSetupTitle}>
-                  Business Setup
+                  {t('onboarding', 'businessSetup')}
                 </ThemedText>
                 
 <ThemedText style={styles.businessSetupSubtitle}>
-                  Let{'\''}s set up Your Business Profile
+                  {t('onboarding', 'letsSetupBusiness')}
                 </ThemedText>
               </View>
               
@@ -235,7 +235,7 @@ export default function OnboardingScreen() {
                     </View>
                   )}
                 </TouchableOpacity>
-                <ThemedText style={styles.addQrText}>Tap to add QR code</ThemedText>
+                <ThemedText style={styles.addQrText}>{t('onboarding', 'tapAddQr')}</ThemedText>
               </View>
               
               <View style={styles.businessNameInputContainer}>
@@ -243,12 +243,12 @@ export default function OnboardingScreen() {
                   value={businessName}
                   onChangeText={setBusinessName}
                   style={styles.businessNameInput}
-                  placeholder="Enter Business Name"
+                  placeholder={t('onboarding', 'enterBusinessName')}
                   placeholderTextColor="#6B7280"
                 />
                 
                 <ThemedText style={styles.instructionText}>
-                  This will be displayed on your settings
+                  {t('onboarding', 'displayInSettingsBusiness')}
                 </ThemedText>
               </View>
             </View>
@@ -276,7 +276,7 @@ export default function OnboardingScreen() {
                 style={styles.backButton}
                 onPress={previousSlide}
               >
-                <ThemedText style={styles.backButtonText}>Back</ThemedText>
+                <ThemedText style={styles.backButtonText}>{t('onboarding', 'back')}</ThemedText>
               </TouchableOpacity>
             )}
             
@@ -285,7 +285,7 @@ export default function OnboardingScreen() {
               onPress={nextSlide}
             >
               <ThemedText style={styles.getStartedButtonText}>
-                {currentSlide === 0 ? "Let's GO!" : currentSlide === 2 ? 'Get Started' : 'Next'}
+                {currentSlide === 0 ? t('onboarding', 'letsGo') : currentSlide === 2 ? t('onboarding', 'getStarted') : t('onboarding', 'next')}
               </ThemedText>
             </TouchableOpacity>
           </View>
@@ -546,5 +546,3 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
 });
-
-

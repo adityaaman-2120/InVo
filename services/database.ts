@@ -12,6 +12,7 @@ export type Product = {
   expiryDate: string; 
   imageUri?: string; 
   addedDate: string;
+  minStockAlert: number;
 };
 
 export type Supplier = {
@@ -163,7 +164,8 @@ class DatabaseService {
           unit TEXT NOT NULL DEFAULT 'pc',
           expiryDate TEXT NOT NULL,
           imageUri TEXT,
-          addedDate TEXT NOT NULL
+          addedDate TEXT NOT NULL,
+          minStockAlert INTEGER NOT NULL DEFAULT 5
         );
       `);
       console.log('Products table created');
@@ -179,14 +181,26 @@ class DatabaseService {
       } catch (e) {
         console.warn('Failed to verify/migrate unit column:', e);
       }
-      
+
       // Create indexes for better performance
       await this.db.execAsync(`
         CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
         CREATE INDEX IF NOT EXISTS idx_products_addedDate ON products(addedDate);
       `);
       console.log('Product indexes created');
-      
+
+      // Migration: ensure "minStockAlert" column exists
+      try {
+        const columns: Array<{ name: string }> = await this.db.getAllAsync("PRAGMA table_info(products)");
+        const hasMinStockAlert = columns.some(c => c.name === 'minStockAlert');
+        if (!hasMinStockAlert) {
+          await this.db.execAsync("ALTER TABLE products ADD COLUMN minStockAlert INTEGER NOT NULL DEFAULT 5");
+          console.log('Migrated products table: added minStockAlert column');
+        }
+      } catch (e) {
+        console.warn('Failed to verify/migrate minStockAlert column:', e);
+      }
+
       // Create cart_items table
       await this.db.execAsync(`
         CREATE TABLE IF NOT EXISTS cart_items (
@@ -282,11 +296,37 @@ class DatabaseService {
         unit: row.unit || 'pc',
         expiryDate: row.expiryDate,
         imageUri: row.imageUri,
-        addedDate: row.addedDate
+        addedDate: row.addedDate,
+        minStockAlert: row.minStockAlert ?? 5,
       }));
     } catch (error) {
       console.warn('Failed to load products:', error);
       return [];
+    }
+  }
+
+  async getProductById(id: string): Promise<Product | null> {
+    await this.ensureDatabase();
+    if (!this.db) return null;
+    try {
+      const result = await this.db.getFirstAsync('SELECT * FROM products WHERE id = ?', [id]);
+      if (!result) return null;
+      const row = result as any;
+      return {
+        id: row.id,
+        name: row.name,
+        buyingPrice: row.buyingPrice,
+        sellingPrice: row.sellingPrice,
+        quantity: row.quantity,
+        unit: row.unit || 'pc',
+        expiryDate: row.expiryDate,
+        imageUri: row.imageUri,
+        addedDate: row.addedDate,
+        minStockAlert: row.minStockAlert ?? 5,
+      };
+    } catch (error) {
+      console.warn('Failed to get product by id:', error);
+      return null;
     }
   }
 
@@ -330,8 +370,8 @@ class DatabaseService {
 
       // Use a prepared statement for better performance and safety
       await this.db.runAsync(
-        'INSERT INTO products (id, name, buyingPrice, sellingPrice, quantity, unit, expiryDate, imageUri, addedDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [id, product.name.trim(), product.buyingPrice, product.sellingPrice, product.quantity, (product.unit || 'pc'), product.expiryDate, product.imageUri || null, addedDate]
+        'INSERT INTO products (id, name, buyingPrice, sellingPrice, quantity, unit, expiryDate, imageUri, addedDate, minStockAlert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [id, product.name.trim(), product.buyingPrice, product.sellingPrice, product.quantity, (product.unit || 'pc'), product.expiryDate, product.imageUri || null, addedDate, product.minStockAlert ?? 5]
       );
       
       console.log('Product added successfully with ID:', id);
@@ -369,8 +409,8 @@ class DatabaseService {
 
     try {
       await this.db.runAsync(
-        'UPDATE products SET name = ?, buyingPrice = ?, sellingPrice = ?, quantity = ?, unit = ?, expiryDate = ?, imageUri = ? WHERE id = ?',
-        [product.name, product.buyingPrice, product.sellingPrice, product.quantity, (product.unit || 'pc'), product.expiryDate, product.imageUri || null, product.id]
+        'UPDATE products SET name = ?, buyingPrice = ?, sellingPrice = ?, quantity = ?, unit = ?, expiryDate = ?, imageUri = ?, minStockAlert = ? WHERE id = ?',
+        [product.name, product.buyingPrice, product.sellingPrice, product.quantity, (product.unit || 'pc'), product.expiryDate, product.imageUri || null, product.minStockAlert ?? 5, product.id]
       );
     } catch (error) {
       console.warn('Failed to update product:', error);
@@ -442,7 +482,8 @@ class DatabaseService {
         unit: row.unit || 'pc',
         expiryDate: row.expiryDate,
         imageUri: row.imageUri,
-        addedDate: row.addedDate
+        addedDate: row.addedDate,
+        minStockAlert: row.minStockAlert ?? 5,
       }));
     } catch (error) {
       console.warn('Failed to search products:', error);

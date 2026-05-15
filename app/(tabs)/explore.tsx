@@ -4,6 +4,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 // eslint-disable-next-line import/namespace
 import { DeleteIcon } from '@/components/ui/delete-icon';
 import { SearchIcon } from '@/components/ui/search-icon';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Product as DBProduct, dbService } from '@/services/database';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -66,6 +67,7 @@ SearchBarComponent.displayName = 'SearchBarComponent';
 // ============================================================================
 
 export default function ExploreScreen() {
+  const { t } = useLanguage();
   // Cart state
   const [cart, setCart] = useState<CartItem[]>([]);
   const [products, setProducts] = useState<DBProduct[]>([]);

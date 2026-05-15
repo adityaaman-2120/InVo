@@ -2,6 +2,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ArrowRightIcon } from '@/components/ui/arrow-right-icon';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useLanguage } from '@/contexts/LanguageContext';
 // eslint-disable-next-line import/namespace
 import { dbService, Supplier } from '@/services/database';
 import { useFocusEffect } from '@react-navigation/native';
@@ -61,6 +62,7 @@ function EmptyState() {
 
 export default function SuppliersScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const bg = Colors.dark.background;
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);

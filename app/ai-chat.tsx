@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { ChatMessage, geminiService } from '@/services/gemini';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -23,6 +24,7 @@ import Svg, { Path } from 'react-native-svg';
 
 export default function AIChatScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const scrollViewRef = useRef<ScrollView>(null);
   const bg = Colors.dark.background;
 

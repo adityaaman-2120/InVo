@@ -1,6 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useLanguage } from '@/contexts/LanguageContext';
 // eslint-disable-next-line import/namespace
 import { dbService, Product } from '@/services/database';
 import { EditIcon } from '@/components/ui/edit-icon';
@@ -14,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProductDetailScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const navigation = useNavigation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const bg = Colors.dark.background;

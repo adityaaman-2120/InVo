@@ -133,6 +133,11 @@ export default function ProductsScreen() {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [tempExpiryDate, setTempExpiryDate] = useState<Date | null>(null);
+  const [sortOption, setSortOption] = useState('recent');
+  const [sortModalVisible, setSortModalVisible] = useState(false);
+  const [sortSubMenu, setSortSubMenu] = useState<string | null>(null);
+  const [priceSortDir, setPriceSortDir] = useState<'asc' | 'desc'>('desc');
+  const [stockSortDir, setStockSortDir] = useState<'asc' | 'desc'>('desc');
   const onMeasureRow = useCallback((h: number) => {
     if (!measuredRowHeight && h > 0) setMeasuredRowHeight(h);
   }, [measuredRowHeight]);
@@ -195,7 +200,22 @@ export default function ProductsScreen() {
     product.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
   );
 
-  const currentProducts = isSearchOpen ? filteredProducts : products;
+  // Sort products
+  const sortedProducts = (() => {
+    const list = isSearchOpen ? filteredProducts : [...products];
+    switch (sortOption) {
+      case 'name':
+        return list.sort((a, b) => a.name.localeCompare(b.name));
+      case 'price':
+        return list.sort((a, b) => priceSortDir === 'desc' ? b.sellingPrice - a.sellingPrice : a.sellingPrice - b.sellingPrice);
+      case 'stock':
+        return list.sort((a, b) => stockSortDir === 'desc' ? b.quantity - a.quantity : a.quantity - b.quantity);
+      default:
+        return list.sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime());
+    }
+  })();
+
+  const currentProducts = sortedProducts;
   const visibleCount = Math.min(currentProducts.length, VISIBLE_ITEMS);
   const baseRowHeight = measuredRowHeight ?? ROW_HEIGHT;
   const computedHeight = baseRowHeight * (visibleCount || VISIBLE_ITEMS) + SEPARATOR_HEIGHT * Math.max((visibleCount || VISIBLE_ITEMS) - 1, 0) + 8;
@@ -331,6 +351,20 @@ export default function ProductsScreen() {
     }, [loadProducts])
   );
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const Notifications = require('expo-notifications');
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== 'granted') {
+          console.log('Notification permissions not granted');
+        }
+      } catch (e) {
+        // Notifications not available
+      }
+    })();
+  }, []);
+
   const openAddForm = () => setIsAddOpen(true);
   const closeAddForm = async () => {
     setIsAddOpen(false);
@@ -425,7 +459,24 @@ export default function ProductsScreen() {
         unit: unitInput,
         expiryDate: expiryISO,
         imageUri: selectedImage || undefined,
+        minStockAlert: 5,
       });
+      
+      // Check if this product qualifies as low stock
+      if (quantity <= 5) {
+        try {
+          const Notifications = require('expo-notifications');
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: 'Low Stock Alert',
+              body: `${trimmedName} is running low on stock (${quantity} left)`,
+            },
+            trigger: null,
+          });
+        } catch (notifError) {
+          console.warn('Failed to send low stock notification:', notifError);
+        }
+      }
       
       // Reload products to get updated list
       await loadProducts();
@@ -471,6 +522,9 @@ export default function ProductsScreen() {
         <View style={styles.header}>
           <ThemedText type="title">Products</ThemedText>
           <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.headerButton} onPress={() => setSortModalVisible(true)}>
+              <IconSymbol name="arrow.up.arrow.down" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
             <TouchableOpacity style={styles.headerButton} onPress={toggleSearch}>
               <SearchIcon size={24} color="#FFFFFF" />
             </TouchableOpacity>
@@ -667,6 +721,62 @@ export default function ProductsScreen() {
         </Modal>
       </View>
       </SwipeableScreen>
+
+      {/* Sort Dropdown Modal */}
+      <Modal visible={sortModalVisible} animationType="fade" transparent>
+        <TouchableOpacity style={styles.sortOverlay} activeOpacity={1} onPress={() => { setSortModalVisible(false); setSortSubMenu(null); }}>
+          <View style={[styles.sortDropdown, { position: 'absolute', top: 155, right: 20 }]}>
+            <TouchableOpacity style={[styles.sortOption, sortOption === 'recent' && styles.sortOptionActive]} onPress={() => { setSortOption('recent'); setSortModalVisible(false); }}>
+              <ThemedText style={[styles.sortOptionText, sortOption === 'recent' && styles.sortOptionTextActive]}>Recently added</ThemedText>
+              {sortOption === 'recent' && <IconSymbol name="checkmark" size={16} color="#3B82F6" />}
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.sortOption, sortOption === 'name' && styles.sortOptionActive]} onPress={() => { setSortOption('name'); setSortModalVisible(false); }}>
+              <ThemedText style={[styles.sortOptionText, sortOption === 'name' && styles.sortOptionTextActive]}>Name (A-Z)</ThemedText>
+              {sortOption === 'name' && <IconSymbol name="checkmark" size={16} color="#3B82F6" />}
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.sortOption, sortOption === 'price' && styles.sortOptionActive]} onPress={() => { setSortSubMenu(sortSubMenu === 'price' ? null : 'price'); }}>
+              <ThemedText style={[styles.sortOptionText, sortOption === 'price' && styles.sortOptionTextActive]}>Price</ThemedText>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                {sortOption === 'price' && <IconSymbol name="checkmark" size={16} color="#3B82F6" />}
+                <ThemedText style={styles.sortChevron}>&gt;</ThemedText>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.sortOption, sortOption === 'stock' && styles.sortOptionActive]} onPress={() => { setSortSubMenu(sortSubMenu === 'stock' ? null : 'stock'); }}>
+              <ThemedText style={[styles.sortOptionText, sortOption === 'stock' && styles.sortOptionTextActive]}>Stock</ThemedText>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                {sortOption === 'stock' && <IconSymbol name="checkmark" size={16} color="#3B82F6" />}
+                <ThemedText style={styles.sortChevron}>&gt;</ThemedText>
+              </View>
+            </TouchableOpacity>
+          </View>
+          {sortSubMenu === 'price' && (
+            <View style={[styles.sortDropdown, styles.sortSubDropdown, { position: 'absolute', top: 155, right: 200 }]}>
+              <ThemedText style={styles.sortSubHeader}>Price</ThemedText>
+              <TouchableOpacity style={[styles.sortOption, sortOption === 'price' && priceSortDir === 'desc' && styles.sortOptionActive]} onPress={() => { setSortOption('price'); setPriceSortDir('desc'); setSortModalVisible(false); setSortSubMenu(null); }}>
+                <ThemedText style={[styles.sortOptionText, sortOption === 'price' && priceSortDir === 'desc' && styles.sortOptionTextActive]}>High to Low</ThemedText>
+                {sortOption === 'price' && priceSortDir === 'desc' && <IconSymbol name="checkmark" size={16} color="#3B82F6" />}
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.sortOption, sortOption === 'price' && priceSortDir === 'asc' && styles.sortOptionActive]} onPress={() => { setSortOption('price'); setPriceSortDir('asc'); setSortModalVisible(false); setSortSubMenu(null); }}>
+                <ThemedText style={[styles.sortOptionText, sortOption === 'price' && priceSortDir === 'asc' && styles.sortOptionTextActive]}>Low to High</ThemedText>
+                {sortOption === 'price' && priceSortDir === 'asc' && <IconSymbol name="checkmark" size={16} color="#3B82F6" />}
+              </TouchableOpacity>
+            </View>
+          )}
+          {sortSubMenu === 'stock' && (
+            <View style={[styles.sortDropdown, styles.sortSubDropdown, { position: 'absolute', top: 203, right: 200 }]}>
+              <ThemedText style={styles.sortSubHeader}>Stock</ThemedText>
+              <TouchableOpacity style={[styles.sortOption, sortOption === 'stock' && stockSortDir === 'desc' && styles.sortOptionActive]} onPress={() => { setSortOption('stock'); setStockSortDir('desc'); setSortModalVisible(false); setSortSubMenu(null); }}>
+                <ThemedText style={[styles.sortOptionText, sortOption === 'stock' && stockSortDir === 'desc' && styles.sortOptionTextActive]}>High to Low</ThemedText>
+                {sortOption === 'stock' && stockSortDir === 'desc' && <IconSymbol name="checkmark" size={16} color="#3B82F6" />}
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.sortOption, sortOption === 'stock' && stockSortDir === 'asc' && styles.sortOptionActive]} onPress={() => { setSortOption('stock'); setStockSortDir('asc'); setSortModalVisible(false); setSortSubMenu(null); }}>
+                <ThemedText style={[styles.sortOptionText, sortOption === 'stock' && stockSortDir === 'asc' && styles.sortOptionTextActive]}>Low to High</ThemedText>
+                {sortOption === 'stock' && stockSortDir === 'asc' && <IconSymbol name="checkmark" size={16} color="#3B82F6" />}
+              </TouchableOpacity>
+            </View>
+          )}
+        </TouchableOpacity>
+      </Modal>
 
       <TouchableOpacity 
         style={styles.floatingAddButton}
@@ -1028,6 +1138,56 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     zIndex: 50,
+  },
+  sortOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  sortDropdown: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 12,
+    paddingVertical: 6,
+    minWidth: 180,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  sortOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  sortOptionActive: {
+    backgroundColor: '#3B82F620',
+  },
+  sortOptionText: {
+    fontSize: 14,
+  },
+  sortOptionTextActive: {
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+  sortChevron: {
+    fontSize: 14,
+    color: '#9BA1A6',
+  },
+  sortSubDropdown: {
+    position: 'absolute',
+    top: -6,
+    right: 188,
+    minWidth: 160,
+  },
+  sortSubHeader: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#9BA1A6',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    textTransform: 'uppercase',
   },
 });
 
