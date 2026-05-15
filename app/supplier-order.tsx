@@ -380,7 +380,7 @@ export default function SupplierOrderScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#121212' },
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 4 },
   content: { flex: 1 },
   bottomSection: { 
     paddingTop: 5,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'space-between', 
     marginBottom: 15, 
-    marginTop: 50 
+    marginTop: 8 
   },
   backButton: {
     width: 40,

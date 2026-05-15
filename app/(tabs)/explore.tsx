@@ -10,6 +10,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Animated, FlatList, Image, Modal, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SwipeableScreen } from '@/components/swipeable-screen';
 
 type CartItem = { id: string; name: string; qty: number; price: number };
 
@@ -459,6 +460,7 @@ export default function ExploreScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <SwipeableScreen>
       <View style={styles.container}>
         <View style={styles.content}>
           {/* Header with Search Toggle */}
@@ -571,6 +573,7 @@ export default function ExploreScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      </SwipeableScreen>
 
       {/* Payment Modal */}
       <Modal
@@ -671,7 +674,7 @@ export default function ExploreScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#121212' },
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 4 },
   content: { flex: 1 },
   bottomSection: { 
     paddingTop: 5,
@@ -685,7 +688,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'space-between', 
     marginBottom: 15, 
-    marginTop: 50 
+    marginTop: 8 
   },
   headerRight: { 
     flexDirection: 'row', 

@@ -333,14 +333,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 8,
-    paddingTop: 16,
+    paddingTop: 4,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
-    marginTop: 40,
+    marginTop: 8,
     marginLeft: 4,
     marginRight: 4,
   },

@@ -7,13 +7,14 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SwipeableScreen } from '@/components/swipeable-screen';
 // import * as FileSystem from 'expo-file-system';
 // import * * Sharing from 'expo-sharing';
-import { AIIcon } from '@/components/ui/ai-icon';
 import { BusinessIcon } from '@/components/ui/business-icon';
 import { QRIcon } from '@/components/ui/qr-icon';
 import { ReportIcon } from '@/components/ui/report-icon';
 import { SupplierIcon } from '@/components/ui/supplier-icon';
+import { SignOutIcon } from '@/components/ui/signout-icon';
 import * as ImagePicker from 'expo-image-picker';
 
 type SettingsData = {
@@ -217,6 +218,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: bg }]}>
+      <SwipeableScreen>
       <View style={styles.container}>
         <View style={styles.header}>
           <ThemedText type="title">Settings</ThemedText>
@@ -241,14 +243,35 @@ export default function SettingsScreen() {
                 placeholderTextColor="#6B7280"
               />
             </View>
-            <TouchableOpacity 
-              onPress={handleLogout}
-              activeOpacity={0.7}
-              style={styles.logoutButton}
-            >
-              <IconSymbol name="arrow.right.square" size={20} color="#EF4444" />
-            </TouchableOpacity>
           </View>
+        </View>
+
+        <View style={styles.settingCardWithSpacing}>
+          <TouchableOpacity 
+            style={styles.settingRow} 
+            activeOpacity={0.7}
+            onPress={pickProfileImage}
+          >
+            <View style={styles.settingLeft}>
+              <IconSymbol name="person.fill" size={20} color="#FFFFFF" />
+              <ThemedText style={styles.settingLabel}>Edit Profile</ThemedText>
+            </View>
+            <IconSymbol name="chevron.right" size={16} color="#9BA1A6" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.settingCardWithSpacing}>
+          <TouchableOpacity 
+            style={styles.settingRow} 
+            activeOpacity={0.7}
+            onPress={handleLogout}
+          >
+            <View style={styles.settingLeft}>
+              <SignOutIcon size={20} color="#EF4444" />
+              <ThemedText style={[styles.settingLabel, { color: '#EF4444' }]}>Log Out</ThemedText>
+            </View>
+            <IconSymbol name="chevron.right" size={16} color="#EF4444" />
+          </TouchableOpacity>
         </View>
 
         {/* Business Settings */}
@@ -314,20 +337,6 @@ export default function SettingsScreen() {
             <TouchableOpacity 
               style={styles.settingRow} 
               activeOpacity={0.7}
-              onPress={() => router.push('/ai-chat')}
-            >
-              <View style={styles.settingLeft}>
-                <AIIcon size={20} color="#FFFFFF" />
-                <ThemedText style={styles.settingLabel}>Ask AI</ThemedText>
-              </View>
-              <IconSymbol name="chevron.right" size={16} color="#9BA1A6" />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.settingCardWithSpacing}>
-            <TouchableOpacity 
-              style={styles.settingRow} 
-              activeOpacity={0.7}
               onPress={handleGenerateReport}
               disabled={isGeneratingReport}
             >
@@ -350,6 +359,7 @@ export default function SettingsScreen() {
         </View>
 
       </View>
+      </SwipeableScreen>
     </SafeAreaView>
   );
 }
@@ -361,11 +371,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 4,
   },
   header: {
     marginBottom: 24,
-    marginTop: 43,
+    marginTop: 8,
   },
   section: {
     marginBottom: 24,

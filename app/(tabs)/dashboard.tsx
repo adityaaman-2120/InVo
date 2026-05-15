@@ -11,6 +11,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Image, RefreshControl, StyleSheet, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SwipeableScreen } from '@/components/swipeable-screen';
+import { useRouter } from 'expo-router';
 
 type StatProps = {
   label: string;
@@ -21,6 +23,7 @@ type StatProps = {
 
 type Transaction = {
   id: string;
+  productId: string;
   type: 'added' | 'updated' | 'sold';
   productName: string;
   quantity: number;
@@ -59,6 +62,7 @@ type DashboardPreferences = {
 };
 
 export default function DashboardScreen() {
+  const router = useRouter();
   const { setTabBarVisible } = useTabBar();
   const [products, setProducts] = useState<Product[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -238,6 +242,7 @@ useEffect(() => {
   return (
     <>
       <SafeAreaView style={styles.safeArea}>
+        <SwipeableScreen>
         <ThemedView style={styles.container}>
             <View style={styles.header}>
               <ThemedText type="title" style={styles.headerTitle} lightColor="#000000" darkColor="#FFFFFF">Dashboard</ThemedText>
@@ -319,8 +324,21 @@ useEffect(() => {
               </View>
             </View>
           </ThemedView>
+        </SwipeableScreen>
       </SafeAreaView>
-      
+
+      {/* Floating Add Product Button */}
+      <TouchableOpacity 
+        style={styles.floatingAddButton}
+        onPress={async () => {
+          await AsyncStorage.setItem('@open_add_product', '1');
+          router.push('/products');
+        }}
+        activeOpacity={0.8}
+      >
+        <IconSymbol name="plus" size={28} color="#FFFFFF" />
+      </TouchableOpacity>
+
       {/* Notification Sidebar - Outside SafeAreaView to appear above everything */}
       {isNotificationOpen && (
         <View style={styles.notificationOverlay}>
@@ -429,6 +447,8 @@ useEffect(() => {
 }
 
 function TransactionItem({ transaction }: { transaction: Transaction }) {
+  const router = useRouter();
+
   const getTransactionIcon = () => {
     switch (transaction.type) {
       case 'added':
@@ -480,7 +500,11 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
   };
 
   return (
-    <View style={styles.transactionItem}>
+    <TouchableOpacity 
+      style={styles.transactionItem}
+      onPress={() => router.push({ pathname: '/product-detail', params: { id: transaction.productId } })}
+      activeOpacity={0.7}
+    >
       <View style={styles.transactionLeft}>
         <View style={styles.transactionIconContainer}>
           {transaction.imageUri ? (
@@ -504,7 +528,7 @@ function TransactionItem({ transaction }: { transaction: Transaction }) {
           {formatTime(transaction.timestamp)}
         </ThemedText>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -516,7 +540,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 4,
     backgroundColor: '#121212',
   },
   header: {
@@ -524,7 +548,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
-    marginTop: 43,
+    marginTop: 8,
     marginLeft: 5,
     marginRight: 5,
   },
@@ -1038,6 +1062,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
+  floatingAddButton: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    zIndex: 50,
+  },
 });
 
 // Generate transactions from products and sales
@@ -1058,6 +1099,7 @@ function generateTransactionsFromProducts(products: Product[], sales: any[]): Tr
     const originallyAddedQty = product.quantity + totalSoldForProduct;
     transactions.push({
       id: `add-${product.id}`,
+      productId: product.id,
       type: 'added',
       productName: product.name,
       quantity: originallyAddedQty,
@@ -1073,6 +1115,7 @@ function generateTransactionsFromProducts(products: Product[], sales: any[]): Tr
     if (product) {
       transactions.push({
         id: `sale-${sale.id}`,
+        productId: product.id,
         type: 'sold',
         productName: product.name,
         quantity: sale.quantitySold,

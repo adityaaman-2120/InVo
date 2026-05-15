@@ -1,9 +1,10 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
 import React from 'react';
-import { Image, useWindowDimensions } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { AnimatedTabIcon } from '@/components/animated-tab-icon';
+import { AIIcon } from '@/components/ui/ai-icon';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { HomeIcon } from '@/components/ui/home-icon';
 import { ProductsIcon } from '@/components/ui/products-icon';
@@ -13,6 +14,9 @@ import { Colors } from '@/constants/theme';
 import { TabBarProvider, useTabBar } from '@/contexts/TabBarContext';
 
 function TabLayoutContent() {
+  const router = useRouter();
+  const segments = useSegments();
+  const activeTab = segments[segments.length - 1] || '';
   const colorScheme = 'dark' as const;
   const { width: screenWidth } = useWindowDimensions();
   const { isTabBarVisible } = useTabBar();
@@ -21,6 +25,7 @@ function TabLayoutContent() {
   const horizontal = (screenWidth - tabWidth) / 2;
 
   return (
+    <>
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tabIconSelected,
@@ -110,8 +115,37 @@ function TabLayoutContent() {
         }}
       />
     </Tabs>
+
+    <TouchableOpacity
+      style={[styles.aiFloatingButton, (activeTab === 'dashboard' || activeTab === 'products') && { bottom: 175 }]}
+      onPress={() => router.push('/ai-chat')}
+      activeOpacity={0.8}
+    >
+      <AIIcon size={28} color="#FFFFFF" />
+    </TouchableOpacity>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  aiFloatingButton: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#8B5CF6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    zIndex: 50,
+  },
+});
 
 export default function TabLayout() {
   return (

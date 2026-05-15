@@ -8,9 +8,10 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, Image, KeyboardAvoidingView, Modal, Platform, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SwipeableScreen } from '@/components/swipeable-screen';
 
 type StatProps = {
   label: string;
@@ -294,10 +295,27 @@ export default function ProductsScreen() {
     setIsDatePickerOpen(false);
   }, [tempExpiryDate]);
 
+  const handledAutoOpenRef = useRef(false);
+
   useEffect(() => {
     loadFormData();
     loadProducts();
   }, [loadProducts, loadFormData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem('@open_add_product').then(val => {
+        if (val === '1' && !handledAutoOpenRef.current) {
+          AsyncStorage.removeItem('@open_add_product');
+          setIsAddOpen(true);
+        }
+      });
+      handledAutoOpenRef.current = false;
+      return () => {
+        handledAutoOpenRef.current = true;
+      };
+    }, [])
+  );
 
   // Save form data when inputs change
   useEffect(() => {
@@ -448,15 +466,11 @@ export default function ProductsScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: bg }]}> 
+      <SwipeableScreen>
       <View style={styles.container}>
         <View style={styles.header}>
           <ThemedText type="title">Products</ThemedText>
           <View style={styles.headerActions}>
-            {!isSearchOpen && (
-              <TouchableOpacity style={styles.headerButton} onPress={openAddForm}>
-              <IconSymbol name="plus" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-            )}
             <TouchableOpacity style={styles.headerButton} onPress={toggleSearch}>
               <SearchIcon size={24} color="#FFFFFF" />
             </TouchableOpacity>
@@ -652,6 +666,15 @@ export default function ProductsScreen() {
           </View>
         </Modal>
       </View>
+      </SwipeableScreen>
+
+      <TouchableOpacity 
+        style={styles.floatingAddButton}
+        onPress={openAddForm}
+        activeOpacity={0.8}
+      >
+        <IconSymbol name="plus" size={28} color="#FFFFFF" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -663,14 +686,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 4,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
-    marginTop: 43,
+    marginTop: 8,
     marginLeft: 5,
     marginRight: 5,
   },
@@ -988,6 +1011,23 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     color: '#9BA1A6',
     maxWidth: 280,
+  },
+  floatingAddButton: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    zIndex: 50,
   },
 });
 
